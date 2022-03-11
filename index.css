@@ -1,0 +1,9 @@
+.absolute-container {
+    position: absolute;
+}
+
+.draganddrop__child-container {
+    display: flex;
+    align-items: center;
+    padding: 3px;
+}
