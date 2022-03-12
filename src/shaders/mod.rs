@@ -1,6 +1,8 @@
 use js_sys::Float32Array;
 use web_sys::{WebGlProgram, WebGl2RenderingContext as Gl, WebGlShader, WebGlBuffer};
 
+pub mod hsv_circle;
+
 pub fn make_f32_buffer(gl: &Gl, array: &[f32]) -> WebGlBuffer {
     let buffer = gl.create_buffer().unwrap();
 
