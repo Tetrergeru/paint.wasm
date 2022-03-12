@@ -1,69 +1,64 @@
-use std::rc::Rc;
+use web_sys::{WebGl2RenderingContext as Gl, WebGlBuffer, WebGlProgram, WebGlUniformLocation};
 
-use web_sys::{WebGl2RenderingContext as Gl, WebGlBuffer, WebGlProgram};
+use super::{init_shader_program, make_f32_buffer, VS_SOURCE};
 
-use super::{init_shader_program, make_f32_buffer};
-
-pub struct HsvCircle {
-    gl: Rc<Gl>,
+pub struct HsvCircleShader {
     program: WebGlProgram,
     buffer: WebGlBuffer,
     buffer_length: i32,
-    vertex_position: u32,
-    viewport: (i32, i32, i32, i32),
+
+    width: i32,
+    height: i32,
+
+    vertex_location: u32,
+    radius_location: WebGlUniformLocation,
 }
 
-impl HsvCircle {
-    pub fn new(gl: Rc<Gl>, viewport: (i32, i32, i32, i32)) -> Self {
-        let program = init_shader_program(&gl, VS_SOURCE, FS_SOURCE);
+impl HsvCircleShader {
+    pub fn new(gl: &Gl, width: i32, height: i32) -> Self {
+        let program = init_shader_program(gl, VS_SOURCE, FS_SOURCE);
 
         let buffer = make_f32_buffer(
-            &gl,
+            gl,
             &[
-                -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
+                -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, //
+                -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
             ],
         );
         let buffer_length = 6;
-        let vertex_position = gl.get_attrib_location(&program, "vertexPosition") as u32;
+        let vertex_location = gl.get_attrib_location(&program, "vertexPosition") as u32;
+        let radius_location = gl.get_uniform_location(&program, "radius").unwrap();
         Self {
-            gl,
             program,
             buffer,
             buffer_length,
-            vertex_position,
-            viewport,
+            width,
+            height,
+            vertex_location,
+            radius_location,
         }
     }
 
-    pub fn draw(&self) {
-        self.gl.viewport(self.viewport.0, self.viewport.1, self.viewport.2, self.viewport.3);
+    pub fn draw(&self, gl: &Gl, x: i32, y: i32, radius: i32) {
+        gl.viewport(x - radius, (self.height - y) - radius, 2 * radius, 2 * radius);
 
-        self.gl.bind_buffer(Gl::ARRAY_BUFFER, Some(&self.buffer));
-        self.gl
-            .vertex_attrib_pointer_with_i32(self.vertex_position, 2, Gl::FLOAT, false, 0, 0);
-        self.gl.enable_vertex_attrib_array(self.vertex_position);
+        gl.bind_buffer(Gl::ARRAY_BUFFER, Some(&self.buffer));
+        gl.vertex_attrib_pointer_with_i32(self.vertex_location, 2, Gl::FLOAT, false, 0, 0);
+        gl.enable_vertex_attrib_array(self.vertex_location);
 
-        self.gl.use_program(Some(&self.program));
+        gl.use_program(Some(&self.program));
 
-        self.gl.enable(Gl::BLEND);
-        self.gl.blend_func(Gl::SRC_ALPHA, Gl::ONE_MINUS_SRC_ALPHA);
+        gl.uniform1f(Some(&self.radius_location), radius as f32);
 
-        self.gl.draw_arrays(Gl::TRIANGLES, 0, self.buffer_length);
-        self.gl.disable(Gl::BLEND);
+        gl.enable(Gl::BLEND);
+        gl.blend_func(Gl::SRC_ALPHA, Gl::ONE_MINUS_SRC_ALPHA);
+
+        gl.draw_arrays(Gl::TRIANGLES, 0, self.buffer_length);
+        gl.disable(Gl::BLEND);
+
+        gl.viewport(0, 0, self.width, self.height);
     }
 }
-
-const VS_SOURCE: &str = "#version 300 es
-
-in vec2 vertexPosition;
-
-out vec2 fragCoord;
-
-void main() {
-    gl_Position = vec4(vertexPosition, 0.0, 1.0);
-    fragCoord = vertexPosition;
-}
-";
 
 const FS_SOURCE: &str = "#version 300 es
 precision mediump float;
@@ -71,6 +66,8 @@ precision mediump float;
 in vec2 fragCoord;
 
 out vec4 color;
+
+uniform float radius;
 
 vec3 hsvToRgb(float hue, float s, float v) {
     float h = hue / 60.0;
@@ -108,7 +105,14 @@ void main() {
 
     if (dist > 1.0)
         discard;
+
+    vec3 targetColor = hsvToRgb(angle, dist, 1.0);
+
+    float border = 1.5 / radius;
+    
+    if (dist > 1.0 - border)
+        color = vec4(targetColor, -(dist - 1.0) / border);
     else
-        color = vec4(hsvToRgb(angle, pow(dist, 1.7), 1.0), 1.0);// - vec4(hsvToRgb(angle, sqrt(dist), 1.0), 1.0);
+        color = vec4(targetColor, 1.0);
 }
 ";

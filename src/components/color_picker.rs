@@ -1,51 +1,78 @@
-use std::rc::Rc;
+use web_sys::{HtmlCanvasElement, MouseEvent};
+use yew::{html, Callback, Component, Context, NodeRef, Properties};
 
-use wasm_bindgen::JsCast;
-use web_sys::{HtmlCanvasElement, MouseEvent, WebGl2RenderingContext as Gl};
-use yew::{html, Component, Context, NodeRef};
-
-use crate::shaders::hsv_circle::HsvCircle;
+use crate::{color::Color, vector::Vector2, virtual_context::VirtualContext};
 
 pub enum Msg {
     Down(MouseEvent),
 }
 
+#[derive(Properties, PartialEq)]
+pub struct Props {
+    pub color_pick: Callback<Color>,
+}
+
 pub struct ColorPicker {
     canvas_ref: NodeRef,
 
-    gl: Option<Rc<Gl>>,
-    hsv_circle: Option<HsvCircle>,
+    virtual_context: Option<VirtualContext>,
 
     width: i32,
-    heigth: i32,
+    height: i32,
 }
 
 impl Component for ColorPicker {
     type Message = Msg;
 
-    type Properties = ();
+    type Properties = Props;
 
     fn create(_ctx: &Context<Self>) -> Self {
         Self {
             canvas_ref: NodeRef::default(),
-            gl: None,
-            hsv_circle: None,
-            width: 200,
-            heigth: 200,
+            virtual_context: None,
+            width: 150,
+            height: 150,
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Down(e) => {
-                self.hsv_circle.as_ref().unwrap().draw();
+                self.virtual_context
+                    .as_ref()
+                    .unwrap()
+                    .clear(Color::new(255, 255, 255, 255));
 
-                let hsv_circle = HsvCircle::new(
-                    self.gl.as_ref().unwrap().clone(),
-                    (e.layer_x() - 5, self.heigth - e.layer_y() - 5, 10, 10),
+                let x = self.width / 2;
+                let y = self.height / 2;
+                let r = self.width / 2 - 10;
+
+                self.virtual_context.as_ref().unwrap().hsv_circle(x, y, r);
+
+                let point = Vector2::new(
+                    (e.layer_x() - x) as f64 / r as f64,
+                    (e.layer_y() - y) as f64 / r as f64,
                 );
 
-                hsv_circle.draw();
+                let (color, point) = point_hsv_to_rgb(point);
+
+                let (x, y) = (
+                    x as f64 + point.x * (r - 1) as f64,
+                    y as f64 + point.y * (r - 1) as f64,
+                );
+
+                self.virtual_context
+                    .as_ref()
+                    .unwrap()
+                    .fill_circle(x, y, 5.0, color);
+
+                self.virtual_context
+                    .as_ref()
+                    .unwrap()
+                    .draw_circle(x, y, 5.0, 1.0);
+
+                ctx.props().color_pick.emit(color);
+
                 false
             }
         }
@@ -54,30 +81,56 @@ impl Component for ColorPicker {
     fn view(&self, ctx: &Context<Self>) -> yew::Html {
         html! {
             <canvas
-                ref={self.canvas_ref.clone()} width=200 height=200
+                ref={self.canvas_ref.clone()} width={self.width.to_string()} height={self.height.to_string()}
                 onmousedown={ctx.link().clone().callback(Msg::Down)}
             />
         }
     }
 
-    fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
-        if _first_render {
+    fn rendered(&mut self, _ctx: &Context<Self>, first_render: bool) {
+        if first_render {
             let canvas = self.canvas_ref.cast::<HtmlCanvasElement>().unwrap();
-            let gl = canvas
-                .get_context("webgl2")
-                .unwrap()
-                .unwrap()
-                .dyn_into::<Gl>()
-                .unwrap();
-            self.gl = Some(Rc::new(gl));
 
-            let hsv_circle = HsvCircle::new(
-                self.gl.as_ref().unwrap().clone(),
-                (10, 10, self.width - 20, self.heigth - 20),
+            self.virtual_context = Some(VirtualContext::new(
+                canvas,
+                self.width as u32,
+                self.height as u32,
+            ));
+
+            self.virtual_context
+                .as_ref()
+                .unwrap()
+                .line(50.0, 50.0, 50.1, 50.1, 1.0);
+
+            self.virtual_context.as_ref().unwrap().hsv_circle(
+                self.width / 2,
+                self.height / 2,
+                self.width / 2 - 10,
             );
-            self.hsv_circle = Some(hsv_circle);
         }
 
-        self.hsv_circle.as_ref().unwrap().draw();
+        log::info!("draw");
     }
+}
+
+fn point_hsv_to_rgb(point: Vector2) -> (Color, Vector2) {
+    let mut new_point = point;
+
+    let mut dist = point.len();
+    let norm = point.norm();
+
+    if dist >= 1.0 {
+        dist = 1.0;
+        new_point = norm;
+    }
+
+    let angle = if norm.y > 0.0 {
+        norm.x.acos()
+    } else {
+        std::f64::consts::TAU - norm.x.acos()
+    };
+
+    let color = Color::from_hsv(angle, dist, 1.0);
+
+    (color, new_point)
 }

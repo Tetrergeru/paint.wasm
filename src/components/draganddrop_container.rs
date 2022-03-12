@@ -9,6 +9,8 @@ pub struct Props {
     #[prop_or_default]
     pub children: Children,
     pub event_target: NodeRef,
+    #[prop_or_default]
+    pub text: String,
 }
 
 pub enum Msg {
@@ -74,7 +76,7 @@ impl Component for DraganddropContainer {
                         border-top-left-radius: 5px;"
                     }
                     onmousedown={ctx.link().callback(Msg::Down)}
-                ></div>
+                >{ctx.props().text.clone()}</div>
                 <div class="draganddrop__child-container">
                     { for ctx.props().children.iter() }
                 </div>

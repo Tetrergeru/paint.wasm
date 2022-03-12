@@ -7,3 +7,17 @@
     align-items: center;
     padding: 3px;
 }
+
+.layers {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.canvas-layer {
+    width: 100px;
+    height: 100px;
+    margin: 5px;
+    display: block;
+    background-color: white;
+}
