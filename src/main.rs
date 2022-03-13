@@ -1,4 +1,4 @@
-use color::Color;
+use color::{Color, Palette};
 use yew::{html, Component, Context, NodeRef};
 
 mod components;
@@ -11,11 +11,11 @@ use components::{color_picker::ColorPicker, draganddrop_container::DraganddropCo
 
 pub struct App {
     my_input: NodeRef,
-    color: Color,
+    palette: Palette,
 }
 
 pub enum Msg {
-    ColorPicked(Color),
+    ColorPicked(Palette),
 }
 
 impl Component for App {
@@ -25,15 +25,15 @@ impl Component for App {
     fn create(_ctx: &yew::Context<Self>) -> Self {
         Self {
             my_input: NodeRef::default(),
-            color: Color::new(0, 0, 0, 255),
+            palette: Palette::default(),
         }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::ColorPicked(color) => {
-                self.color = color;
-                true
+            Msg::ColorPicked(palette) => {
+                self.palette = palette;
+                false
             },
         }
     }
@@ -41,10 +41,15 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> yew::Html {
         html! {
             <div ref={self.my_input.clone()} style={"height: 100vh"}>
-                <DraganddropContainer text={self.color.to_style()} event_target={self.my_input.clone()}>
-                    <ColorPicker color_pick={ctx.link().callback(Msg::ColorPicked)}/>
+                <DraganddropContainer 
+                    text="Pick color" 
+                    event_target={self.my_input.clone()}
+                    key="colorpicker"
+                >
+                    <ColorPicker
+                        color_pick={ctx.link().callback(Msg::ColorPicked)}
+                    />
                 </DraganddropContainer>
-
                 <div class="layers">
                     <canvas class="canvas-layer" id="layer-canvas-1"></canvas>
                     <canvas class="canvas-layer" id="layer-canvas-2"></canvas>

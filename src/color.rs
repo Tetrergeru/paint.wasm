@@ -1,4 +1,4 @@
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Color {
     r: u8,
     g: u8,
@@ -7,7 +7,7 @@ pub struct Color {
 }
 
 impl Color {
-    pub fn new(r: u8, g: u8, b: u8, a: u8) -> Self {
+    pub const fn new(r: u8, g: u8, b: u8, a: u8) -> Self {
         Self { r, g, b, a }
     }
 
@@ -44,6 +44,9 @@ impl Color {
     pub fn to_style(self) -> String {
         format!("rgba({}, {}, {}, {})", self.r, self.g, self.b, self.a)
     }
+
+    pub const BLACK: Color = Self::new(0, 0, 0, 255);
+    pub const WHITE: Color = Self::new(255, 255, 255, 255);
 }
 
 fn f64_to_u8(v: f64) -> u8 {
@@ -54,5 +57,23 @@ fn f64_to_u8(v: f64) -> u8 {
         0
     } else {
         v as u8
+    }
+}
+
+#[derive(PartialEq, Clone)]
+pub struct Palette {
+    pub main: Color,
+    pub help: Color,
+}
+
+impl Palette {
+    pub fn new(main: Color, help: Color) -> Self {
+        Self { main, help }
+    }
+}
+
+impl Default for Palette {
+    fn default() -> Self {
+        Self::new(Color::BLACK, Color::WHITE)
     }
 }

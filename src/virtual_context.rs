@@ -60,8 +60,8 @@ impl VirtualContext {
         }
     }
 
-    pub fn hsv_circle(&self, x: i32, y: i32, r: i32) {
-        self.hsv_circle.draw(&self.context_gl, x, y, r);
+    pub fn hsv_circle(&self, x: f64, y: f64, r: f64) {
+        self.hsv_circle.draw(&self.context_gl, x as i32, y as i32, r as i32);
         self.flush_gl_to_2d();
     }
 
