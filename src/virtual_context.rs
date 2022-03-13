@@ -2,10 +2,14 @@ use gloo::utils::document;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, WebGl2RenderingContext, WebGlTexture};
 
-use crate::{shaders::{
-    copy_image::CopyImageShader, debug_canvases, hsv_circle::HsvCircleShader,
-    load_texture_from_canvas,
-}, color::Color};
+use crate::{
+    color::Color,
+    shaders::{
+        checkerboard::CheckerboardShader, copy_image::CopyImageShader, debug_canvases,
+        hsv_circle::HsvCircleShader, load_texture_from_canvas,
+    },
+    vector::{Vector2, Rectangle},
+};
 
 pub struct VirtualContext {
     canvas_2d: HtmlCanvasElement,
@@ -15,6 +19,7 @@ pub struct VirtualContext {
 
     hsv_circle: HsvCircleShader,
     copy_image: CopyImageShader,
+    checkerboard: CheckerboardShader,
 
     texture_for_swaps: WebGlTexture,
 }
@@ -53,6 +58,11 @@ impl VirtualContext {
                 canvas_gl.width() as i32,
                 canvas_gl.height() as i32,
             ),
+            checkerboard: CheckerboardShader::new(
+                &context_gl,
+                canvas_gl.width() as i32,
+                canvas_gl.height() as i32,
+            ),
             canvas_2d: canvas,
             context_2d,
             canvas_gl,
@@ -60,8 +70,27 @@ impl VirtualContext {
         }
     }
 
+    pub fn new_independent(width: u32, height: u32) -> Self {
+        let canvas: HtmlCanvasElement = document()
+            .create_element("canvas")
+            .unwrap()
+            .unchecked_into();
+        Self::new(canvas, width, height)
+    }
+
     pub fn hsv_circle(&self, x: f64, y: f64, r: f64) {
-        self.hsv_circle.draw(&self.context_gl, x as i32, y as i32, r as i32);
+        self.hsv_circle
+            .draw(&self.context_gl, x as i32, y as i32, r as i32);
+        self.flush_gl_to_2d();
+    }
+
+    pub fn checkerboard(&self, cell_size: usize, color_a: Color, color_b: Color) {
+        self.checkerboard.draw(
+            &self.context_gl,
+            Vector2::new(cell_size as f64, cell_size as f64),
+            color_a,
+            color_b,
+        );
         self.flush_gl_to_2d();
     }
 
@@ -78,7 +107,8 @@ impl VirtualContext {
     }
 
     pub fn clear(&self, color: Color) {
-        self.context_2d.set_fill_style(&JsValue::from_str(&color.to_style()));
+        self.context_2d
+            .set_fill_style(&JsValue::from_str(&color.to_style()));
         self.context_2d.fill_rect(
             0.0,
             0.0,
@@ -90,7 +120,8 @@ impl VirtualContext {
 
     pub fn fill_circle(&self, x0: f64, y0: f64, r: f64, color: Color) {
         self.context_2d.begin_path();
-        self.context_2d.set_fill_style(&JsValue::from_str(&color.to_style()));
+        self.context_2d
+            .set_fill_style(&JsValue::from_str(&color.to_style()));
         self.context_2d
             .arc(x0, y0, r, 0.0, std::f64::consts::PI * 2.0)
             .unwrap();
@@ -110,6 +141,23 @@ impl VirtualContext {
         self.context_2d.stroke();
         self.context_2d.close_path();
         self.flush_2d_to_gl();
+    }
+
+    pub fn draw_image_bounded(&self, image: &HtmlCanvasElement, bounds: Rectangle) {
+        self.context_2d
+            .draw_image_with_html_canvas_element_and_dw_and_dh(
+                image,
+                bounds.coord.x,
+                bounds.coord.y,
+                bounds.size.x,
+                bounds.size.y,
+            )
+            .unwrap();
+        self.flush_2d_to_gl();
+    }
+
+    pub fn get_canvas(&self) -> &'_ HtmlCanvasElement {
+        &self.canvas_2d
     }
 
     fn flush_2d_to_gl(&self) {

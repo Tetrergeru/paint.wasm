@@ -56,7 +56,7 @@ impl Component for ColorPicker {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <div style="display: flex">
-                <div style="position: relative; width: 40px; height: 40px; margin: 5px;">
+                <div style="position: relative; width: 40px; height: 40px; margin: 5px; z-index: 0;">
                     <div style={format!("
                         position: absolute;
                         z-index: 1;

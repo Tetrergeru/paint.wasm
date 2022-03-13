@@ -8,6 +8,27 @@
     padding: 3px;
 }
 
+.layers__container {
+    max-height: 400px;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+}
+
+.layers__container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.layers__container::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+    background: #D8D8D8;
+}
+
+.layers__one-layer-canvas {
+    margin: 3px;
+    border: 1px solid black;
+}
+
 .layers {
     position: absolute;
     top: 0;

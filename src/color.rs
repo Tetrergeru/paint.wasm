@@ -45,6 +45,18 @@ impl Color {
         format!("rgba({}, {}, {}, {})", self.r, self.g, self.b, self.a)
     }
 
+    pub fn get_r(self) -> u8 {
+        self.r
+    }
+
+    pub fn get_g(self) -> u8 {
+        self.g
+    }
+
+    pub fn get_b(self) -> u8 {
+        self.b
+    }
+
     pub const BLACK: Color = Self::new(0, 0, 0, 255);
     pub const WHITE: Color = Self::new(255, 255, 255, 255);
 }

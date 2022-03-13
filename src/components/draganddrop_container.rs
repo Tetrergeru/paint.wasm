@@ -8,9 +8,13 @@ use gloo::events::EventListener;
 pub struct Props {
     #[prop_or_default]
     pub children: Children,
-    pub event_target: NodeRef,
     #[prop_or_default]
     pub text: String,
+    #[prop_or_default]
+    pub left: i32,
+    #[prop_or_default]
+    pub top: i32,
+    pub event_target: NodeRef,
 }
 
 pub enum Msg {
@@ -49,8 +53,8 @@ impl Component for DraganddropContainer {
         });
 
         Self {
-            left: 0,
-            top: 0,
+            left: ctx.props().left,
+            top: ctx.props().top,
             mouse_prev: None,
             _move_listener: move_listener,
             _up_listener: up_listener,

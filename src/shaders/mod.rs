@@ -4,6 +4,7 @@ use web_sys::{WebGlProgram, WebGl2RenderingContext as Gl, WebGlShader, WebGlBuff
 
 pub mod hsv_circle;
 pub mod copy_image;
+pub mod checkerboard;
 
 pub fn make_f32_buffer(gl: &Gl, array: &[f32]) -> WebGlBuffer {
     let buffer = gl.create_buffer().unwrap();

@@ -18,3 +18,17 @@ impl Vector2 {
         Self::new(self.x / len, self.y / len)
     }
 }
+
+pub struct Rectangle {
+    pub coord: Vector2,
+    pub size: Vector2,
+}
+
+impl Rectangle {
+    pub fn new(x: f64, y: f64, w: f64, h: f64) -> Self {
+        Self {
+            coord: Vector2::new(x, y),
+            size: Vector2::new(w, h),
+        }
+    }
+}
