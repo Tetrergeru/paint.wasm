@@ -21,6 +21,7 @@ pub struct Props {
 
 pub enum Msg {
     LayerChanged,
+    PickLayer(usize),
 }
 
 impl Component for LayersWidget {
@@ -65,25 +66,33 @@ impl Component for LayersWidget {
                 }
                 false
             }
+            Msg::PickLayer(id) => {
+                self.manager.borrow_mut().select(id);
+                true
+            } 
         }
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <div class="layers__container">
                 {
                     for self.manager.borrow()
-                        .iter_layers().enumerate()
-                        .map(|(idx, layer)| html!{
-                            <canvas
-                                class="layers__one-layer-canvas"
-                                width=200
-                                height=100
-                                key={layer.get_id()}
-                                ref={self.canvas_refs[idx].clone()}
-                            />
-                    }
-                )
+                        .iter_layers().rev().enumerate().map(|(idx, layer)| {
+                            let id = layer.get_id();
+                            html!{
+                                <canvas
+                                    class="layers__one-layer-canvas"
+                                    style={if layer.get_selected() { "outline: 2px solid blue; border: 1px solid white" } else {""}}
+                                    width=200
+                                    height=100
+                                    key={id}
+                                    onmouseup={ctx.link().callback(move |_| Msg::PickLayer(id))}
+                                    ref={self.canvas_refs[id].clone()}
+                                />
+                            }
+                        }
+                    )
                 }
             </div>
         }
@@ -97,7 +106,7 @@ impl Component for LayersWidget {
 
                 let context = VirtualContext::new(canvas, 200, 100);
 
-                context.checkerboard(10, Color::new(200, 200, 200, 200), Color::WHITE);
+                context.checkerboard(10, Color::new(191, 191, 191, 255), Color::WHITE);
 
                 self.contexts.push(context);
             }

@@ -5,10 +5,10 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, WebGl2RenderingContex
 use crate::{
     color::Color,
     shaders::{
-        checkerboard::CheckerboardShader, copy_image::CopyImageShader, debug_canvases,
-        hsv_circle::HsvCircleShader, load_texture_from_canvas,
+        checkerboard::CheckerboardShader, copy_image::CopyImageShader, hsv_circle::HsvCircleShader,
+        load_texture_from_canvas,
     },
-    vector::{Vector2, Rectangle},
+    vector::{Rectangle, Vector2},
 };
 
 pub struct VirtualContext {
@@ -40,6 +40,7 @@ impl VirtualContext {
             .unchecked_into();
         canvas_gl.set_width(width);
         canvas_gl.set_height(height);
+        log::debug!("VirtualContext new {} {}", width, height);
         let context_gl = canvas_gl
             .get_context("webgl2")
             .unwrap()
@@ -143,6 +144,13 @@ impl VirtualContext {
         self.flush_2d_to_gl();
     }
 
+    pub fn draw_image(&self, image: &HtmlCanvasElement) {
+        self.context_2d
+            .draw_image_with_html_canvas_element(image, 0.0, 0.0)
+            .unwrap();
+        self.flush_2d_to_gl();
+    }
+
     pub fn draw_image_bounded(&self, image: &HtmlCanvasElement, bounds: Rectangle) {
         self.context_2d
             .draw_image_with_html_canvas_element_and_dw_and_dh(
@@ -170,13 +178,11 @@ impl VirtualContext {
             self.canvas_gl.height() as i32,
             &self.texture_for_swaps,
         );
-        debug_canvases(&self.canvas_2d, &self.canvas_gl);
     }
 
     fn flush_gl_to_2d(&self) {
         self.context_2d
             .draw_image_with_html_canvas_element(&self.canvas_gl, 0.0, 0.0)
             .unwrap();
-        debug_canvases(&self.canvas_2d, &self.canvas_gl);
     }
 }

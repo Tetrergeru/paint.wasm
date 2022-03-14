@@ -35,6 +35,7 @@ impl PartialEq for RcLayerManager {
 pub struct LayerManager {
     layers: Vec<Layer>,
     next_id: usize,
+    selected: Option<usize>,
 
     width: u32,
     height: u32,
@@ -49,6 +50,7 @@ impl LayerManager {
         Self {
             layers: vec![],
             next_id: 0,
+            selected: None,
             width,
             height,
             subscribers: vec![],
@@ -70,13 +72,14 @@ impl LayerManager {
         None
     }
 
-    pub fn draw_in_context<F: Fn(&VirtualContext)>(&self, id: usize, f: F) {
-        let layer = self.get_layer(id).unwrap();
-        f(&layer.context);
-        self.notify(Notification::Change { id });
+    pub fn draw_in_context<F: Fn(&VirtualContext)>(&self, f: F) {
+        if let Some(layer) = self.get_selected() {
+            f(&layer.context);
+            self.notify(Notification::Change { id: layer.id });
+        }
     }
 
-    pub fn iter_layers(&self) -> impl Iterator<Item = &Layer> + '_ {
+    pub fn iter_layers(&self) -> impl DoubleEndedIterator<Item = &Layer> + '_ {
         self.layers.iter()
     }
 
@@ -85,6 +88,21 @@ impl LayerManager {
         log::info!("subescribed. id = {}", id);
         self.subscribers.push(Subscriber::new(id, listener));
         id
+    }
+
+    pub fn get_selected(&self) -> Option<&'_ Layer> {
+        if let Some(selected) = self.selected {
+            return self.get_layer(selected);
+        }
+        None
+    }
+
+    pub fn select(&mut self, id: usize) {
+        if let Some(was) = self.selected {
+            self.layers[was].is_selected = false;
+        }
+        self.selected = Some(id);
+        self.layers[id].is_selected = true;
     }
 
     fn notify(&self, notification: Notification) {
@@ -98,6 +116,7 @@ impl LayerManager {
         self.next_id += 1;
         id
     }
+
     fn next_subscriber_id(&mut self) -> usize {
         let id = self.next_subscriber_id;
         self.next_subscriber_id += 1;
@@ -108,6 +127,7 @@ impl LayerManager {
 pub struct Layer {
     id: usize,
     context: VirtualContext,
+    is_selected: bool,
 }
 
 impl Layer {
@@ -115,7 +135,12 @@ impl Layer {
         Self {
             id,
             context: VirtualContext::new_independent(width, height),
+            is_selected: false,
         }
+    }
+
+    pub fn get_selected(&self) -> bool {
+        self.is_selected
     }
 
     pub fn get_id(&self) -> usize {

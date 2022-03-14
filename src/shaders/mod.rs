@@ -72,9 +72,6 @@ pub fn load_texture_from_canvas(gl: &Gl, texture: &WebGlTexture, image: &HtmlCan
 extern "C" {
     #[wasm_bindgen(js_name = "uniformTexture")]
     pub fn uniform_texture(gl: &Gl, location: &WebGlUniformLocation, texture: &WebGlTexture);
-
-    #[wasm_bindgen(js_name = "debugCanvases")]
-    pub fn debug_canvases(c1: &HtmlCanvasElement, c2: &HtmlCanvasElement);
 }
 
 const VS_SOURCE: &str = "#version 300 es
