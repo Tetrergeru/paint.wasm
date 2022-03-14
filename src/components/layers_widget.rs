@@ -69,7 +69,7 @@ impl Component for LayersWidget {
             Msg::PickLayer(id) => {
                 self.manager.borrow_mut().select(id);
                 true
-            } 
+            }
         }
     }
 
@@ -78,7 +78,7 @@ impl Component for LayersWidget {
             <div class="layers__container">
                 {
                     for self.manager.borrow()
-                        .iter_layers().rev().enumerate().map(|(idx, layer)| {
+                        .iter_layers().rev().map(|layer| {
                             let id = layer.get_id();
                             html!{
                                 <canvas

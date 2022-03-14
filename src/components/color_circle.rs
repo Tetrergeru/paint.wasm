@@ -39,11 +39,7 @@ impl Component for ColorCircle {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Down(e) => {
-                let context = self.virtual_context.as_ref().unwrap();
-
-                context.clear(Color::new(255, 255, 255, 255));
-
-                let color = self.draw(e.layer_x() as f64, e.layer_y() as f64);
+                let color = self.draw(e.offset_x() as f64, e.offset_y() as f64);
 
                 ctx.props().color_pick.emit(color);
 
@@ -84,7 +80,7 @@ impl Component for ColorCircle {
 impl ColorCircle {
     fn draw(&self, x0: f64, y0: f64) -> Color {
         let context = self.virtual_context.as_ref().unwrap();
-        context.clear(Color::new(255, 255, 255, 255));
+        context.clear(Color::new(0, 255, 255, 0));
 
         let x = (self.width / 2) as f64;
         let y = (self.height / 2) as f64;
@@ -96,10 +92,7 @@ impl ColorCircle {
 
         let (color, point) = point_hsv_to_rgb(point);
 
-        let (x, y) = (
-            x as f64 + point.x * r,
-            y as f64 + point.y * r,
-        );
+        let (x, y) = (x as f64 + point.x * r, y as f64 + point.y * r);
 
         context.fill_circle(x, y, 5.0, color);
 
@@ -111,7 +104,7 @@ impl ColorCircle {
 
 fn point_hsv_to_rgb(point: Vector2) -> (Color, Vector2) {
     if point.x == 0.0 && point.y == 0.0 {
-        return (Color::WHITE, point)
+        return (Color::WHITE, point);
     }
 
     let mut new_point = point;

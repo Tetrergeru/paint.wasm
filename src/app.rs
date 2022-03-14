@@ -43,6 +43,9 @@ impl Component for App {
         let layer_manager: RcLayerManager = LayerManager::new(1000, 500).into();
         layer_manager.borrow_mut().push_layer();
         layer_manager.borrow_mut().push_layer();
+        layer_manager.borrow_mut().push_layer();
+        layer_manager.borrow_mut().push_layer();
+        layer_manager.borrow_mut().push_layer();
         Self {
             my_input: NodeRef::default(),
             palette: Palette::default(),
@@ -61,8 +64,8 @@ impl Component for App {
             Msg::MouseDown(e) => {
                 self.layer_manager.borrow().draw_in_context(|context| {
                     context.fill_circle(
-                        e.layer_x() as f64,
-                        e.layer_y() as f64,
+                        e.offset_x() as f64,
+                        e.offset_y() as f64,
                         50.0,
                         self.palette.main,
                     );

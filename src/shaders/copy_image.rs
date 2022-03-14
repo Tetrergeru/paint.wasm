@@ -50,14 +50,13 @@ impl CopyImageShader {
 
         gl.use_program(Some(&self.program));
 
-        // gl.uniform1i(Some(&self.image_location), image.deref());
         uniform_texture(gl, &self.image_location, image);
 
-        gl.enable(Gl::BLEND);
-        gl.blend_func(Gl::SRC_ALPHA, Gl::ONE_MINUS_SRC_ALPHA);
+        // gl.enable(Gl::BLEND);
+        // gl.blend_func(Gl::SRC_ALPHA, Gl::ONE_MINUS_SRC_ALPHA);
 
         gl.draw_arrays(Gl::TRIANGLES, 0, self.buffer_length);
-        gl.disable(Gl::BLEND);
+        // gl.disable(Gl::BLEND);
 
         gl.viewport(0, 0, self.width, self.height);
     }

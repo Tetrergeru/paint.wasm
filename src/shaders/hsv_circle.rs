@@ -40,7 +40,12 @@ impl HsvCircleShader {
     }
 
     pub fn draw(&self, gl: &Gl, x: i32, y: i32, radius: i32) {
-        gl.viewport(x - radius, (self.height - y) - radius, 2 * radius, 2 * radius);
+        gl.viewport(
+            x - radius,
+            (self.height - y) - radius,
+            2 * radius,
+            2 * radius,
+        );
 
         gl.bind_buffer(Gl::ARRAY_BUFFER, Some(&self.buffer));
         gl.vertex_attrib_pointer_with_i32(self.vertex_location, 2, Gl::FLOAT, false, 0, 0);
@@ -109,7 +114,7 @@ void main() {
     vec3 targetColor = hsvToRgb(angle, dist, 1.0);
 
     float border = 1.5 / radius;
-    
+
     if (dist > 1.0 - border)
         color = vec4(targetColor, -(dist - 1.0) / border);
     else

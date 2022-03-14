@@ -68,7 +68,7 @@ impl Component for DraganddropContainer {
                     left: {}px;
                     top: {}px;
                     background-color: white;
-                    border: 1px solid black; 
+                    border: 1px solid black;
                     border-radius: 5px;
                 ", self.left, self.top)}>
                 <div
@@ -99,7 +99,7 @@ impl Component for DraganddropContainer {
                 }
             },
             Msg::Down(e) => {
-                self.mouse_prev = Some((e.layer_x(), e.layer_y()));
+                self.mouse_prev = Some((e.offset_x(), e.offset_y()));
                 false
             }
             Msg::Up => {

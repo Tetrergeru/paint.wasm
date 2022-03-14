@@ -108,6 +108,10 @@ impl VirtualContext {
     }
 
     pub fn clear(&self, color: Color) {
+        self.context_2d.save();
+        self.context_2d
+            .set_global_composite_operation("copy")
+            .unwrap();
         self.context_2d
             .set_fill_style(&JsValue::from_str(&color.to_style()));
         self.context_2d.fill_rect(
@@ -116,6 +120,7 @@ impl VirtualContext {
             self.canvas_2d.width() as f64,
             self.canvas_2d.height() as f64,
         );
+        self.context_2d.restore();
         self.flush_2d_to_gl();
     }
 
