@@ -41,6 +41,11 @@ impl CopyImageShader {
         }
     }
 
+    pub fn set_size(&mut self, w: i32, h: i32) {
+        self.width = w;
+        self.height = h;
+    }
+
     pub fn draw(&self, gl: &Gl, x: i32, y: i32, width: i32, height: i32, image: &WebGlTexture) {
         gl.viewport(x, self.height - y - height, width, height);
 

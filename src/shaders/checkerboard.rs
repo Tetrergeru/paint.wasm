@@ -1,6 +1,6 @@
 use web_sys::{WebGl2RenderingContext as Gl, WebGlBuffer, WebGlProgram, WebGlUniformLocation};
 
-use crate::{vector::Vector2, color::Color};
+use crate::{color::Color, vector::Vector2};
 
 use super::{init_shader_program, make_f32_buffer, VS_SOURCE};
 
@@ -47,7 +47,14 @@ impl CheckerboardShader {
         }
     }
 
+    pub fn set_size(&mut self, w: i32, h: i32) {
+        self.width = w;
+        self.height = h;
+    }
+
     pub fn draw(&self, gl: &Gl, cell_size: Vector2, color_a: Color, color_b: Color) {
+        gl.viewport(0, 0, self.width, self.height);
+
         gl.bind_buffer(Gl::ARRAY_BUFFER, Some(&self.buffer));
         gl.vertex_attrib_pointer_with_i32(self.vertex_location, 2, Gl::FLOAT, false, 0, 0);
         gl.enable_vertex_attrib_array(self.vertex_location);
@@ -94,7 +101,9 @@ uniform vec3 colorA;
 uniform vec3 colorB;
 
 void main() {
-    if ((int((fragCoord.x  + 1.0) / cellSize.x) + int((fragCoord.y  + 1.0) / cellSize.y)) % 2 == 0)
+    int x = int((fragCoord.x + 1.0) / (2.0 * cellSize.x));
+    int y = int((fragCoord.y + 1.0) / (2.0 * cellSize.y));
+    if ((x + y) % 2 == 1)
         color = vec4(colorA, 1.0);
     else
         color = vec4(colorB, 1.0);

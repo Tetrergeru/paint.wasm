@@ -40,7 +40,6 @@ impl VirtualContext {
             .unchecked_into();
         canvas_gl.set_width(width);
         canvas_gl.set_height(height);
-        log::debug!("VirtualContext new {} {}", width, height);
         let context_gl = canvas_gl
             .get_context("webgl2")
             .unwrap()
@@ -85,7 +84,7 @@ impl VirtualContext {
         self.flush_gl_to_2d();
     }
 
-    pub fn checkerboard(&self, cell_size: usize, color_a: Color, color_b: Color) {
+    pub fn checkerboard(&self, cell_size: f64, color_a: Color, color_b: Color) {
         self.checkerboard.draw(
             &self.context_gl,
             Vector2::new(cell_size as f64, cell_size as f64),
@@ -95,10 +94,10 @@ impl VirtualContext {
         self.flush_gl_to_2d();
     }
 
-    pub fn line(&self, x0: f64, y0: f64, x1: f64, y1: f64, width: f64) {
+    pub fn line(&self, x0: f64, y0: f64, x1: f64, y1: f64, width: f64, color: Color) {
         self.context_2d.begin_path();
         self.context_2d
-            .set_stroke_style(&JsValue::from_str("black"));
+            .set_stroke_style(&JsValue::from_str(&color.to_style()));
         self.context_2d.set_line_width(width);
         self.context_2d.move_to(x0, y0);
         self.context_2d.line_to(x1, y1);
@@ -171,6 +170,24 @@ impl VirtualContext {
 
     pub fn get_canvas(&self) -> &'_ HtmlCanvasElement {
         &self.canvas_2d
+    }
+
+    pub fn set_size(&mut self, width: u32, height: u32) {
+        self.canvas_2d.set_width(width);
+        self.canvas_gl.set_width(width);
+        self.canvas_2d.set_height(height);
+        self.canvas_gl.set_height(height);
+        self.checkerboard.set_size(width as i32, height as i32);
+        self.hsv_circle.set_size(width as i32, height as i32);
+        self.copy_image.set_size(width as i32, height as i32);
+    }
+
+    pub fn width(&self) -> u32 {
+        self.get_canvas().width()
+    }
+
+    pub fn height(&self) -> u32 {
+        self.get_canvas().height()
     }
 
     fn flush_2d_to_gl(&self) {

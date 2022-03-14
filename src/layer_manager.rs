@@ -46,7 +46,6 @@ pub struct LayerManager {
 
 impl LayerManager {
     pub fn new(width: u32, height: u32) -> Self {
-        log::debug!("LayerManager new");
         Self {
             layers: vec![],
             next_id: 0,
@@ -72,7 +71,7 @@ impl LayerManager {
         None
     }
 
-    pub fn draw_in_context<F: Fn(&VirtualContext)>(&self, f: F) {
+    pub fn draw_in_context<F: FnMut(&VirtualContext)>(&self, mut f: F) {
         if let Some(layer) = self.get_selected() {
             f(&layer.context);
             self.notify(Notification::Change { id: layer.id });
@@ -85,7 +84,6 @@ impl LayerManager {
 
     pub fn subscribe(&mut self, listener: Box<dyn Fn(Notification)>) -> usize {
         let id = self.next_subscriber_id();
-        log::info!("subescribed. id = {}", id);
         self.subscribers.push(Subscriber::new(id, listener));
         id
     }

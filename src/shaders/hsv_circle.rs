@@ -39,6 +39,11 @@ impl HsvCircleShader {
         }
     }
 
+    pub fn set_size(&mut self, w: i32, h: i32) {
+        self.width = w;
+        self.height = h;
+    }
+
     pub fn draw(&self, gl: &Gl, x: i32, y: i32, radius: i32) {
         gl.viewport(
             x - radius,

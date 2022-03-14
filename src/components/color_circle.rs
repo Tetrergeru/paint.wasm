@@ -67,11 +67,6 @@ impl Component for ColorCircle {
                 self.height as u32,
             ));
 
-            self.virtual_context
-                .as_ref()
-                .unwrap()
-                .line(50.0, 50.0, 50.1, 50.1, 1.0);
-
             self.draw(self.width as f64 / 2.0, self.height as f64 / 2.0);
         }
     }

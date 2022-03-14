@@ -35,7 +35,6 @@ impl Component for LayersWidget {
         let on_notifiication = ctx.link().callback(|m| m);
 
         manager.borrow_mut().subscribe(Box::new(move |n| {
-            log::info!("LayersWidget receive notification {:?}", n);
             on_notifiication.emit(match n {
                 Notification::Change { .. } => Msg::LayerChanged,
             });
@@ -55,10 +54,8 @@ impl Component for LayersWidget {
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::LayerChanged => {
-                log::info!("LayersWidget update");
                 let manager = self.manager.borrow();
                 for (idx, ctx) in self.contexts.iter().enumerate() {
-                    log::info!("onchanged flush {}", idx);
                     ctx.draw_image_bounded(
                         manager.get_layer(idx).unwrap().get_canvas(),
                         Rectangle::new(0.0, 0.0, 200.0, 100.0),
@@ -100,13 +97,12 @@ impl Component for LayersWidget {
 
     fn rendered(&mut self, _ctx: &Context<Self>, first_render: bool) {
         if first_render {
-            log::info!("LayersWidget first_render");
             for (_i, canvas_ref) in self.canvas_refs.iter().enumerate() {
                 let canvas = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
 
                 let context = VirtualContext::new(canvas, 200, 100);
 
-                context.checkerboard(10, Color::new(191, 191, 191, 255), Color::WHITE);
+                context.checkerboard(5.0, Color::new(191, 191, 191, 255), Color::WHITE);
 
                 self.contexts.push(context);
             }
