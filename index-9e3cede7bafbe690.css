@@ -1,0 +1,52 @@
+.main-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: gray;
+}
+
+.absolute-container {
+    position: absolute;
+}
+
+.draganddrop__child-container {
+    display: flex;
+    align-items: center;
+    padding: 3px;
+}
+
+.layers__container {
+    max-height: 400px;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+}
+
+.layers__container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.layers__container::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+    background: #D8D8D8;
+}
+
+.layers__one-layer-canvas {
+    margin: 3px;
+    border: 1px solid black;
+}
+
+.layers {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.canvas-layer {
+    width: 100px;
+    height: 100px;
+    margin: 5px;
+    display: block;
+    background-color: white;
+}
