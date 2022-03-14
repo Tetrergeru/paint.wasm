@@ -16,6 +16,8 @@ pub struct CopyImageShader {
     image_location: WebGlUniformLocation,
 }
 
+const FS_SOURCE: &str = include_str!("src/copy_image.frag");
+
 impl CopyImageShader {
     pub fn new(gl: &Gl, width: i32, height: i32) -> Self {
         let program = init_shader_program(gl, VS_SOURCE, FS_SOURCE);
@@ -66,18 +68,3 @@ impl CopyImageShader {
         gl.viewport(0, 0, self.width, self.height);
     }
 }
-
-const FS_SOURCE: &str = "#version 300 es
-precision mediump float;
-
-uniform sampler2D image;
-
-in vec2 fragCoord;
-
-out vec4 color;
-
-void main() {
-    vec2 pos = vec2(fragCoord.x, -fragCoord.y);
-    color = texture(image, vec2(0.5, 0.5) + pos * 0.5);
-}
-";
